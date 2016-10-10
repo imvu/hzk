@@ -1,5 +1,8 @@
 -*- mode: text; -*-
 
+v2.1.1 | 2016-10-10
+  * add connect and close functions. Merged in from existing IMVU work | tallen
+
 v2.1.0 | 2014-10-16
   * add Data.Zookeeper.Pool | junjihashimoto
 

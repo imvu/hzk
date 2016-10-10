@@ -55,6 +55,8 @@ module Database.Zookeeper
          addAuth
        , setWatcher
        , withZookeeper
+       , connect
+       , close
 
          -- * Configuration/State
        , getState
@@ -103,6 +105,30 @@ import qualified Data.ByteString as B
 import           Control.Exception
 import           Database.Zookeeper.CApi
 import           Database.Zookeeper.Types
+
+connect :: String
+        -> Timeout
+        -> Maybe Watcher
+        -> Maybe ClientID
+        -> IO Zookeeper
+connect endpoint timeout watcher clientId = withCString endpoint $ \strPtr -> do
+    let cClientIdPtr = case clientId of
+           Nothing             -> nullPtr
+           Just (ClientID ptr) -> ptr
+
+    cWatcher <- wrapWatcher watcher
+    zh       <- throwIfNull "zookeeper_init"
+             $ c_zookeeperInit
+                 strPtr
+                 cWatcher
+                 (fromIntegral timeout)
+                 cClientIdPtr
+                 nullPtr
+                 0
+    return $! zh `seq` Zookeeper zh
+
+close :: Zookeeper -> IO ()
+close (Zookeeper zh) = c_zookeeperClose zh
 
 -- | Connects to the zookeeper cluster. This function may throw an
 -- exception if a valid zookeeper handle could not be created.
